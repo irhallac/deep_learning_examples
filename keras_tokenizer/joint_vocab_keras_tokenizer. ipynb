@@ -1,0 +1,282 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/anaconda3/envs/py27dl/lib/python2.7/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.\n",
+      "  from ._conv import register_converters as _register_converters\n",
+      "Using TensorFlow backend.\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "from keras.preprocessing.text import Tokenizer\n",
+    "from keras.preprocessing.sequence import pad_sequences\n",
+    "\n",
+    "\n",
+    "data_1 = np.array([\"kelime8 kelime2 kelime3\", \"kelime4 kelime5 kelime6 kelime7\", \n",
+    "                   \"kelime8 kelime2 kelime3 kelime8\"])\n",
+    "data_2 = np.array([\"kelime1 kelime8 kelime8 kelime6\", \"kelime7 kelime8 kelime9 kelime5 kelime6\"])\n",
+    "\n",
+    "MAX_NUM_WORDS = 4\n",
+    "MAX_SEQUENCE_LENGTH = 8"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "data_1:\n",
+      "kelime8 kelime2 kelime3\n",
+      "kelime4 kelime5 kelime6 kelime7\n",
+      "kelime8 kelime2 kelime3 kelime8\n",
+      "\n",
+      "data_2:\n",
+      "kelime1 kelime8 kelime8 kelime6\n",
+      "kelime7 kelime8 kelime9 kelime5 kelime6\n"
+     ]
+    }
+   ],
+   "source": [
+    "print \"data_1:\"\n",
+    "for cumle in data_1:\n",
+    "    print cumle\n",
+    "    \n",
+    "print \"\\ndata_2:\"\n",
+    "for cumle in data_2:\n",
+    "    print cumle"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'kelime2': 2, 'kelime3': 3, 'kelime6': 6, 'kelime7': 7, 'kelime4': 4, 'kelime5': 5, 'kelime8': 1}\n",
+      "- - - - - - - - -- - - - - - -\n",
+      "OrderedDict([('kelime8', 3), ('kelime2', 2), ('kelime3', 2), ('kelime4', 1), ('kelime5', 1), ('kelime6', 1), ('kelime7', 1)])\n",
+      "\n",
+      " # # # # # # # # # # # # # # # \n",
+      "\n",
+      "{'kelime1': 3, 'kelime6': 2, 'kelime7': 4, 'kelime5': 6, 'kelime8': 1, 'kelime9': 5}\n",
+      "- - - - - - - - -- - - - - - -\n",
+      "OrderedDict([('kelime1', 1), ('kelime8', 3), ('kelime6', 2), ('kelime7', 1), ('kelime9', 1), ('kelime5', 1)])\n"
+     ]
+    }
+   ],
+   "source": [
+    "tokenizer1 = Tokenizer(num_words=MAX_NUM_WORDS)\n",
+    "tokenizer1.fit_on_texts(data_1)\n",
+    "tokenizer2 = Tokenizer(num_words=MAX_NUM_WORDS)\n",
+    "tokenizer2.fit_on_texts(data_2)\n",
+    "print(tokenizer1.word_index)\n",
+    "print(\"- - - - - - - - -- - - - - - -\")\n",
+    "print(tokenizer1.word_counts)\n",
+    "print(\"\\n # # # # # # # # # # # # # # # \\n\")\n",
+    "print(tokenizer2.word_index)\n",
+    "print(\"- - - - - - - - -- - - - - - -\")\n",
+    "print(tokenizer2.word_counts)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "kelime2\n",
+      "kelime8\n",
+      "kelime6\n",
+      "kelime7\n",
+      "kelime9\n",
+      "kelime5\n"
+     ]
+    }
+   ],
+   "source": [
+    "for item in tokenizer2.word_counts:\n",
+    "    print(item)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[('kelime8', 3), ('kelime2', 2), ('kelime3', 2), ('kelime6', 1)]\n",
+      "[('kelime8', 3), ('kelime6', 2), ('kelime1', 1), ('kelime7', 1)]\n"
+     ]
+    }
+   ],
+   "source": [
+    "import collections\n",
+    "most_common1 = collections.Counter(tokenizer1.word_counts).most_common(MAX_NUM_WORDS)\n",
+    "most_common2 = collections.Counter(tokenizer2.word_counts).most_common(MAX_NUM_WORDS)\n",
+    "print(most_common1)\n",
+    "print(most_common2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#tekrar etmeyecek şekilde birleştirme işlemi\n",
+    "a = set()\n",
+    "for i,k in most_common1:\n",
+    "    a.add(i)\n",
+    "for i,k in most_common2:\n",
+    "    a.add(i)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "set(['kelime2', 'kelime3', 'kelime1', 'kelime6', 'kelime7', 'kelime8'])\n"
+     ]
+    }
+   ],
+   "source": [
+    "print a"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[6, 1, 2], [4, 5], [6, 1, 2, 6]]\n",
+      "[[3, 6, 6, 4], [5, 6, 4]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "tokenizer3 = Tokenizer(num_words = 2*MAX_NUM_WORDS)\n",
+    "tokenizer3.fit_on_texts(a)\n",
+    "sequences1 = tokenizer3.texts_to_sequences(data_1)\n",
+    "sequences2 = tokenizer3.texts_to_sequences(data_2)\n",
+    "print(sequences1)\n",
+    "print(sequences2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'kelime1': 3,\n",
+       " 'kelime2': 1,\n",
+       " 'kelime3': 2,\n",
+       " 'kelime6': 4,\n",
+       " 'kelime7': 5,\n",
+       " 'kelime8': 6}"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "tokenizer3.word_index"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[0 0 0 0 0 6 1 2]\n",
+      " [0 0 0 0 0 0 4 5]\n",
+      " [0 0 0 0 6 1 2 6]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "x_train1 = pad_sequences(sequences1, maxlen=MAX_SEQUENCE_LENGTH)\n",
+    "print(x_train1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[0 0 0 0 3 6 6 4]\n",
+      " [0 0 0 0 0 5 6 4]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "x_train2 = pad_sequences(sequences2, maxlen=MAX_SEQUENCE_LENGTH)\n",
+    "print(x_train2)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.15"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
